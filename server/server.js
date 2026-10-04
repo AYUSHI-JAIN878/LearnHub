@@ -1,4 +1,3 @@
-
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
@@ -17,51 +16,53 @@ import {
 
 const app = express();
 
+// Render provides PORT automatically
 const PORT = process.env.PORT || 5000;
 
-// ===============================
-// Middleware
-// ===============================
+// CORS - allow both local development and deployed frontend
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://learn-hub-wheat.vercel.app",
+];
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: function (origin, callback) {
+      // Allow requests without origin (Postman, server-to-server, etc.)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
 
 app.use(express.json());
 
-// ===============================
-// Health Check
-// ===============================
-
+// Health check / root route
 app.get("/", (req, res) => {
   res.status(200).json({
     message: "LearnHub API is running",
   });
 });
 
-// ===============================
-// API Routes
-// ===============================
-
+// API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/ai", aiRoutes);
 
-// ===============================
-// Error Handling
-// ===============================
-
+// Error handling
 app.use(notFound);
 app.use(errorHandler);
 
-// ===============================
-// Start Server
-// ===============================
-
+// Start server
 const startServer = async () => {
   try {
     await connectDB();
