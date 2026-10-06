@@ -24,10 +24,12 @@ const allowedOrigins = [
   "https://learn-hub-wheat.vercel.app",
 ];
 
+// CORS configuration
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests from Postman/server-to-server
+      // Allow requests without an origin
+      // (Postman, server-to-server requests, etc.)
       if (!origin) {
         return callback(null, true);
       }
@@ -39,9 +41,27 @@ app.use(
       console.log("Blocked by CORS:", origin);
       return callback(new Error("Not allowed by CORS"));
     },
+
     credentials: true,
+
+    methods: [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS",
+    ],
+
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+    ],
   })
 );
+
+// Handle preflight requests
+app.options("*", cors());
 
 app.use(express.json());
 
