@@ -16,10 +16,9 @@ import {
 
 const app = express();
 
-// Render provides PORT automatically
 const PORT = process.env.PORT || 5000;
 
-// CORS - allow both local development and deployed frontend
+// Allowed frontend origins
 const allowedOrigins = [
   "http://localhost:5173",
   "https://learn-hub-wheat.vercel.app",
@@ -28,7 +27,7 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests without origin (Postman, server-to-server, etc.)
+      // Allow requests from Postman/server-to-server
       if (!origin) {
         return callback(null, true);
       }
@@ -37,6 +36,7 @@ app.use(
         return callback(null, true);
       }
 
+      console.log("Blocked by CORS:", origin);
       return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
@@ -45,7 +45,7 @@ app.use(
 
 app.use(express.json());
 
-// Health check / root route
+// Root / health check
 app.get("/", (req, res) => {
   res.status(200).json({
     message: "LearnHub API is running",
